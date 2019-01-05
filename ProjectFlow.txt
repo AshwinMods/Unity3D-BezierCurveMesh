@@ -9,7 +9,9 @@ DONE
 4. Upgraded PointData to Struct from Vector
 5. Add Control point to PointData
 6. Use Target to change Control Point
+	IMPROVE : The relation of ControlPoint to Point should be Visible
+7. Draw Quadratic Bezier Curve (Parabolic OR Three Point Curve)
 
 NEXT
-IMPROVE : The relation of ControlPoint to Point should be Visible
-Draw Quadratic Bezier Curve (Parabolic OR Three Point Curve)
+Add Second Control point, Sync with Target Position
+Draw Cubic Bezier Curve (Parabolic OR Three Point Curve)

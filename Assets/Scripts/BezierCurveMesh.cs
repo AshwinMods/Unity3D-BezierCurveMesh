@@ -10,22 +10,28 @@ public class BezierCurveMesh : MonoBehaviour
         public Vector3 pos;
         public Vector3 cPoint;
     }
+    
+    List<PoinData> pointDataList = new List<PoinData>();
+    List<Vector3> curveDataList = new List<Vector3>();
 
-    [SerializeField] List<PoinData> pointList = new List<PoinData>();
+    [SerializeField] int splitCount = 10;
 
     #region Editor Mode
     [Space]
     [Header("Editor Settings")]
     [SerializeField] Transform target = null;
     [SerializeField] bool syncWithTarget = false;
-    bool isUpdated;
+    [SerializeField] bool createCurve = false;
+    [SerializeField] bool updateCurve = false;
 
     [Space]
     [SerializeField] bool drawPoints = false;
     [SerializeField] bool drawControls = false;
     [SerializeField] bool drawLines = false;
     [SerializeField] bool drawCPLine = false;
+    [SerializeField] bool drawCurve = false;
 
+    bool isUpdated;
     Vector3 drawSize = Vector3.one * 0.2f;
     private void OnDrawGizmos()
     {
@@ -48,47 +54,90 @@ public class BezierCurveMesh : MonoBehaviour
                         pData.cPoint = pData.pos;
                     }
 
-                    if (pointList.Count == i)
+                    if (pointDataList.Count == i)
                     {
-                        pointList.Add(pData);
+                        pointDataList.Add(pData);
                     }
                     else
                     {
-                        pointList[i] = pData;
+                        pointDataList[i] = pData;
                     }
                 }
-                if (pointList.Count > target.childCount)
+                if (pointDataList.Count > target.childCount)
                 {
-                    pointList.RemoveRange(target.childCount, pointList.Count - target.childCount);
+                    pointDataList.RemoveRange(target.childCount, pointDataList.Count - target.childCount);
                 }
                 isUpdated = true;
             }
         }
 
+        if (createCurve || updateCurve)
+        {
+            createCurve = false;
+            curveDataList.Clear();
+            for (int i = 0; i < pointDataList.Count-1; i++)
+            {
+                curveDataList.AddRange(Bezier_QuadCurvePoints(pointDataList[i].pos, pointDataList[i].cPoint, pointDataList[i + 1].pos, splitCount));
+            }
+        }
 
-        for (int i = 0; i < pointList.Count; i++)
+        if (drawCurve)
+        {
+            Gizmos.color = Color.blue;
+            for (int i = 0; i < curveDataList.Count-1; i++)
+            {
+                Gizmos.DrawLine(curveDataList[i], curveDataList[i + 1]);
+            }
+        }
+
+        for (int i = 0; i < pointDataList.Count; i++)
         {
             Gizmos.color = Color.white;
             if (drawPoints)
             {
-                Gizmos.DrawCube(pointList[i].pos, drawSize);
+                Gizmos.DrawCube(pointDataList[i].pos, drawSize);
             }
-            if (drawLines && i < pointList.Count-1)
+            if (drawLines && i < pointDataList.Count-1)
             {
-                Gizmos.DrawLine(pointList[i].pos, pointList[i + 1].pos);
+                Gizmos.DrawLine(pointDataList[i].pos, pointDataList[i + 1].pos);
             }
 
             Gizmos.color = Color.yellow;
             if (drawControls)
             {
-                Gizmos.DrawCube(pointList[i].cPoint, drawSize);
+                Gizmos.DrawCube(pointDataList[i].cPoint, drawSize);
             }
-            if (drawCPLine && i < pointList.Count - 1)
+            if (drawCPLine && i < pointDataList.Count - 1)
             {
-                Gizmos.DrawLine(pointList[i].pos, pointList[i].cPoint);
-                Gizmos.DrawLine(pointList[i].cPoint, pointList[i+1].pos);
+                Gizmos.DrawLine(pointDataList[i].pos, pointDataList[i].cPoint);
+                Gizmos.DrawLine(pointDataList[i].cPoint, pointDataList[i+1].pos);
             }
         }
     }
     #endregion
+
+
+    public Vector3[] Bezier_QuadCurvePoints(Vector3 p1, Vector3 p2, Vector3 p3, int splits)
+    {
+        Vector3[] res = new Vector3[splits];
+        float delta = 1f / (splits - 1);
+        float dist = 0;
+        for (int i = 0; i < (splits - 1); i++)
+        {
+            res[i] = Bezier_QuadCurvePoint(p1, p2, p3, dist);
+            dist += delta;
+        }
+        res[splits - 1] = Bezier_QuadCurvePoint(p1, p2, p3, 1);
+        return res;
+    }
+
+    public Vector3 Bezier_QuadCurvePoint(Vector3 p1, Vector3 p2, Vector3 p3, float t)
+    {
+        Vector3 res = Vector3.zero;
+        res.x = (1 - t) * (1 - t) * p1.x + 2 * (1 - t) * t * p2.x + t * t * p3.x;
+        res.y = (1 - t) * (1 - t) * p1.y + 2 * (1 - t) * t * p2.y + t * t * p3.y;
+        res.z = (1 - t) * (1 - t) * p1.z + 2 * (1 - t) * t * p2.z + t * t * p3.z;
+        return res;
+    }
 }
+
