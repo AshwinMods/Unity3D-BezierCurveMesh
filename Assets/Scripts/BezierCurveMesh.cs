@@ -22,7 +22,9 @@ public class BezierCurveMesh : MonoBehaviour
 
     [Space]
     [SerializeField] bool drawPoints = false;
+    [SerializeField] bool drawControls = false;
     [SerializeField] bool drawLines = false;
+    [SerializeField] bool drawCPLine = false;
 
     Vector3 drawSize = Vector3.one * 0.2f;
     private void OnDrawGizmos()
@@ -63,18 +65,28 @@ public class BezierCurveMesh : MonoBehaviour
             }
         }
 
-        if (drawPoints)
+
+        for (int i = 0; i < pointList.Count; i++)
         {
-            foreach (var p in pointList)
+            Gizmos.color = Color.white;
+            if (drawPoints)
             {
-                Gizmos.DrawCube(p.pos, drawSize);
+                Gizmos.DrawCube(pointList[i].pos, drawSize);
             }
-        }
-        if (drawLines)
-        {
-            for (int i = 0; i < pointList.Count-1; i++)
+            if (drawLines && i < pointList.Count-1)
             {
                 Gizmos.DrawLine(pointList[i].pos, pointList[i + 1].pos);
+            }
+
+            Gizmos.color = Color.yellow;
+            if (drawControls)
+            {
+                Gizmos.DrawCube(pointList[i].cPoint, drawSize);
+            }
+            if (drawCPLine && i < pointList.Count - 1)
+            {
+                Gizmos.DrawLine(pointList[i].pos, pointList[i].cPoint);
+                Gizmos.DrawLine(pointList[i].cPoint, pointList[i+1].pos);
             }
         }
     }

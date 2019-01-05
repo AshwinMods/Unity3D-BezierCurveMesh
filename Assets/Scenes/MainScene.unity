@@ -680,7 +680,9 @@ MonoBehaviour:
   target: {fileID: 749799561}
   syncWithTarget: 1
   drawPoints: 0
+  drawControls: 0
   drawLines: 1
+  drawCPLine: 1
 --- !u!4 &1859921263
 Transform:
   m_ObjectHideFlags: 0
