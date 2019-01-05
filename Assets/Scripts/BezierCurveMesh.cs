@@ -9,12 +9,41 @@ public class BezierCurveMesh : MonoBehaviour
     #region Editor Mode
     [Space]
     [Header("Editor Settings")]
+    [SerializeField] Transform target;
+    [SerializeField] bool syncWithTarget;
+    bool isUpdated;
+
+    [Space]
     [SerializeField] bool drawPoints;
     [SerializeField] bool drawLines;
 
     Vector3 drawSize = Vector3.one * 0.2f;
     private void OnDrawGizmos()
     {
+        if (syncWithTarget && target != null)
+        {
+            if (target.hasChanged || !isUpdated)
+            {
+                for (int i = 0; i < target.childCount; i++)
+                {
+                    Transform t = target.GetChild(i);
+                    if (pointList.Count == i)
+                    {
+                        pointList.Add(t.position);
+                    }
+                    else
+                    {
+                        pointList[i] = t.position;
+                    }
+                }
+                if (pointList.Count > target.childCount)
+                {
+                    pointList.RemoveRange(target.childCount, pointList.Count - target.childCount);
+                }
+                isUpdated = true;
+            }
+        }
+
         if (drawPoints)
         {
             foreach (var p in pointList)

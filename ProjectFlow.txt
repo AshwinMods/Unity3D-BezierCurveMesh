@@ -2,8 +2,12 @@ Bezier Curve Mesh
 -----------------
 
 DONE
-Store Points Data
-Visualize it using Gizmos
+1. Store Points Data
+2. Visualize it using Gizmos
+3. Use other GameObject's Position as Point Data
+	IMPROVED : Click on Point should Select relative Gameobject
 
 NEXT
-Use other GameObject's Position as Point Data
+Add Control point to PointData
+Use Target to change Control Point
+Draw Quadratic Bezier Curve (Parabolic OR Three Point Curve)
