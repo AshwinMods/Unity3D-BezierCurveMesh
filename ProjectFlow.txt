@@ -7,8 +7,9 @@ DONE
 3. Use other GameObject's Position as Point Data
 	IMPROVED : Click on Point should Select relative Gameobject
 4. Upgraded PointData to Struct from Vector
+5. Add Control point to PointData
+6. Use Target to change Control Point
 
 NEXT
-Add Control point to PointData
-Use Target to change Control Point
+IMPROVE : The relation of ControlPoint to Point should be Visible
 Draw Quadratic Bezier Curve (Parabolic OR Three Point Curve)

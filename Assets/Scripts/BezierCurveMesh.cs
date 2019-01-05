@@ -8,6 +8,7 @@ public class BezierCurveMesh : MonoBehaviour
     public struct PoinData
     {
         public Vector3 pos;
+        public Vector3 cPoint;
     }
 
     [SerializeField] List<PoinData> pointList = new List<PoinData>();
@@ -32,16 +33,25 @@ public class BezierCurveMesh : MonoBehaviour
             {
                 for (int i = 0; i < target.childCount; i++)
                 {
-                    Transform t = target.GetChild(i);
+                    Transform targetPoint = target.GetChild(i);
                     PoinData pData = new PoinData();
+                    pData.pos = targetPoint.position;
+                    if (targetPoint.childCount > 0)
+                    {
+                        Transform contPoint = targetPoint.GetChild(0);
+                        pData.cPoint = contPoint.position;
+                    }
+                    else
+                    {
+                        pData.cPoint = pData.pos;
+                    }
+
                     if (pointList.Count == i)
                     {
-                        pData.pos = t.position;
                         pointList.Add(pData);
                     }
                     else
                     {
-                        pData.pos = t.position;
                         pointList[i] = pData;
                     }
                 }
