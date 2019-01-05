@@ -4,18 +4,24 @@ using UnityEngine;
 
 public class BezierCurveMesh : MonoBehaviour
 {
-    [SerializeField] List<Vector3> pointList;
+    [System.Serializable]
+    public struct PoinData
+    {
+        public Vector3 pos;
+    }
+
+    [SerializeField] List<PoinData> pointList = new List<PoinData>();
 
     #region Editor Mode
     [Space]
     [Header("Editor Settings")]
-    [SerializeField] Transform target;
-    [SerializeField] bool syncWithTarget;
+    [SerializeField] Transform target = null;
+    [SerializeField] bool syncWithTarget = false;
     bool isUpdated;
 
     [Space]
-    [SerializeField] bool drawPoints;
-    [SerializeField] bool drawLines;
+    [SerializeField] bool drawPoints = false;
+    [SerializeField] bool drawLines = false;
 
     Vector3 drawSize = Vector3.one * 0.2f;
     private void OnDrawGizmos()
@@ -27,13 +33,16 @@ public class BezierCurveMesh : MonoBehaviour
                 for (int i = 0; i < target.childCount; i++)
                 {
                     Transform t = target.GetChild(i);
+                    PoinData pData = new PoinData();
                     if (pointList.Count == i)
                     {
-                        pointList.Add(t.position);
+                        pData.pos = t.position;
+                        pointList.Add(pData);
                     }
                     else
                     {
-                        pointList[i] = t.position;
+                        pData.pos = t.position;
+                        pointList[i] = pData;
                     }
                 }
                 if (pointList.Count > target.childCount)
@@ -48,14 +57,14 @@ public class BezierCurveMesh : MonoBehaviour
         {
             foreach (var p in pointList)
             {
-                Gizmos.DrawCube(p, drawSize);
+                Gizmos.DrawCube(p.pos, drawSize);
             }
         }
         if (drawLines)
         {
             for (int i = 0; i < pointList.Count-1; i++)
             {
-                Gizmos.DrawLine(pointList[i], pointList[i + 1]);
+                Gizmos.DrawLine(pointList[i].pos, pointList[i + 1].pos);
             }
         }
     }

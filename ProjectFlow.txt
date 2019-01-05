@@ -6,6 +6,7 @@ DONE
 2. Visualize it using Gizmos
 3. Use other GameObject's Position as Point Data
 	IMPROVED : Click on Point should Select relative Gameobject
+4. Upgraded PointData to Struct from Vector
 
 NEXT
 Add Control point to PointData
