@@ -1,0 +1,9 @@
+Bezier Curve Mesh
+-----------------
+
+DONE
+Store Points Data
+Visualize it using Gizmos
+
+NEXT
+Use other GameObject's Position as Point Data
