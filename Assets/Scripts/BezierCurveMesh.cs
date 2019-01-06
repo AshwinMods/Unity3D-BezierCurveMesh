@@ -16,14 +16,17 @@ public class BezierCurveMesh : MonoBehaviour
     List<Vector3> curveDataList = new List<Vector3>();
 
     [SerializeField] int splitCount = 10;
+    [SerializeField] float meshHeight = 2f;
 
     #region Editor Mode
     [Space]
     [Header("Editor Settings")]
     [SerializeField] Transform target = null;
+    [SerializeField] MeshFilter meshTarget;
     [SerializeField] bool syncWithTarget = false;
     [SerializeField] bool createCurve = false;
     [SerializeField] bool updateCurve = false;
+    [SerializeField] bool createMesh = false;
 
     [Space]
     [SerializeField] bool drawPoints = false;
@@ -33,6 +36,7 @@ public class BezierCurveMesh : MonoBehaviour
     [SerializeField] bool drawCurve = false;
 
     bool isUpdated;
+    Mesh mesh = null;
     Vector3 drawSize = Vector3.one * 0.2f;
     private void OnDrawGizmos()
     {
@@ -90,6 +94,46 @@ public class BezierCurveMesh : MonoBehaviour
                 //curveDataList.AddRange(Bezier_QuadCurvePoints(pointDataList[i].pos, pointDataList[i].cPoint1, pointDataList[i + 1].pos, splitCount));
                 curveDataList.AddRange(Bezier_CubicCurvePoints(pointDataList[i].pos, pointDataList[i].cPoint1, pointDataList[i + 1].cPoint2, pointDataList[i + 1].pos, splitCount));
             }
+        }
+
+        if (createMesh)
+        {
+            createMesh = false;
+
+            int numPoints = curveDataList.Count * 2;
+            Vector3[] verts = new Vector3[numPoints+1]; //Error Fix
+            Vector2[] uvs = new Vector2[numPoints+1]; // Error Fix
+
+            for (int i = 0; i < curveDataList.Count; i++)
+            {
+                verts[i * 2 + 0] = curveDataList[i];
+                verts[i * 2 + 1] = curveDataList[i] + Vector3.down * meshHeight;
+
+                uvs[i * 2 + 0] = verts[i * 2 + 0];
+                uvs[i * 2 + 1] = verts[i * 2 + 1];
+            }
+
+            int numTris = numPoints - 2;
+            int[] indices = new int[numTris * 3];
+            for (int i = 0; i < curveDataList.Count-1; i++)
+            {
+                indices[i * 6 + 0] = i * 2 + 1;
+                indices[i * 6 + 1] = i * 2 + 0;
+                indices[i * 6 + 2] = i * 2 + 2;
+
+                indices[i * 6 + 3] = i * 2 + 2;
+                indices[i * 6 + 4] = i * 2 + 3;
+                indices[i * 6 + 5] = i * 2 + 1;
+            }
+            if (mesh == null)
+            {
+                mesh = new Mesh();
+            }
+            mesh.vertices = verts;
+            mesh.uv = uvs;
+            mesh.triangles = indices;
+            mesh.SetIndices(indices, MeshTopology.Triangles, 0, true);
+            meshTarget.mesh = mesh;
         }
 
         if (drawCurve)

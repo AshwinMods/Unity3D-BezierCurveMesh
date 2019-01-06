@@ -13,6 +13,10 @@ DONE
 7. Draw Quadratic Bezier Curve (Parabolic OR Three Point Curve)
 8. Add Second Control point, Sync with Target Position
 9. Draw Cubic Bezier Curve (Parabolic OR Three Point Curve)
+10.Create Mesh using Curve Points
 
 NEXT
-Create Mesh using Curve Points
+Add Physics Collision Points
+Create Mesh 3D mesh
+Add Option to Tweak Mesh Edges and Caps
+Add Setting to choose between Curves
