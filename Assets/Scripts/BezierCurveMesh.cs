@@ -35,11 +35,22 @@ public class BezierCurveMesh : MonoBehaviour
     [SerializeField] bool drawCPLine = false;
     [SerializeField] bool drawCurve = false;
 
+    public enum UVType
+    {
+        None,
+        VertexBased,
+        AxisBased,
+        LengthBased,
+    }
+    public UVType uvType;
+
     bool isUpdated;
     Mesh mesh = null;
     Vector3 drawSize = Vector3.one * 0.2f;
     private void OnDrawGizmos()
     {
+        splitCount = Mathf.Max(2, splitCount);
+
         if (syncWithTarget && target != null)
         {
             if (target.hasChanged || !isUpdated)
@@ -100,40 +111,83 @@ public class BezierCurveMesh : MonoBehaviour
         {
             createMesh = false;
 
-            int numPoints = curveDataList.Count * 2;
-            Vector3[] verts = new Vector3[numPoints+1]; //Error Fix
-            Vector2[] uvs = new Vector2[numPoints+1]; // Error Fix
+            int numPoints = curveDataList.Count * 4;
+            Vector3[] verts = new Vector3[numPoints];
+            Vector2[] uvs = new Vector2[numPoints];
 
-            for (int i = 0; i < curveDataList.Count; i++)
+            float curvelength = 0;
+            for (int i = 0; i < curveDataList.Count - 1; i++)
             {
-                verts[i * 2 + 0] = curveDataList[i];
-                verts[i * 2 + 1] = curveDataList[i] + Vector3.down * meshHeight;
+                curvelength += Vector3.Distance(curveDataList[i], curveDataList[i + 1]);
+            }
 
-                uvs[i * 2 + 0] = verts[i * 2 + 0];
-                uvs[i * 2 + 1] = verts[i * 2 + 1];
+            float u1, u2, covered = 0;
+            for (int i = 0; i < curveDataList.Count - 1; i++)
+            {
+                verts[i * 4 + 0] = curveDataList[i];
+                verts[i * 4 + 1] = curveDataList[i] + Vector3.down * meshHeight;
+                verts[i * 4 + 2] = curveDataList[i + 1];
+                verts[i * 4 + 3] = curveDataList[i + 1] + Vector3.down * meshHeight;
+
+                switch (uvType)
+                {
+                    case UVType.None:
+                        uvs[i * 4 + 0] = Vector3.zero;
+                        uvs[i * 4 + 1] = Vector3.zero;
+                        uvs[i * 4 + 2] = Vector3.zero;
+                        uvs[i * 4 + 3] = Vector3.zero;
+                        break;
+                    case UVType.VertexBased:
+                        uvs[i * 4 + 0] = verts[i * 4 + 0];
+                        uvs[i * 4 + 1] = verts[i * 4 + 1];
+                        uvs[i * 4 + 2] = verts[i * 4 + 2];
+                        uvs[i * 4 + 3] = verts[i * 4 + 3];
+                        break;
+                    case UVType.AxisBased:
+                        u1 = (curveDataList[i].x - curveDataList[0].x) / (curveDataList[curveDataList.Count - 1].x - curveDataList[0].x);
+                        u2 = (curveDataList[i + 1].x - curveDataList[0].x) / (curveDataList[curveDataList.Count - 1].x - curveDataList[0].x);
+                        uvs[i * 4 + 0] = new Vector2(u1, 1);
+                        uvs[i * 4 + 1] = new Vector2(u1, 0);
+                        uvs[i * 4 + 2] = new Vector2(u2, 1);
+                        uvs[i * 4 + 3] = new Vector2(u2, 0);
+                        break;
+                    case UVType.LengthBased:
+                        u1 = covered / curvelength;
+                        covered += Vector3.Distance(curveDataList[i], curveDataList[i + 1]);
+                        u2 = covered / curvelength;
+                        uvs[i * 4 + 0] = new Vector2(u1, 1);
+                        uvs[i * 4 + 1] = new Vector2(u1, 0);
+                        uvs[i * 4 + 2] = new Vector2(u2, 1);
+                        uvs[i * 4 + 3] = new Vector2(u2, 0);
+                        break;
+                    default:
+                        break;
+                }
             }
 
             int numTris = numPoints - 2;
             int[] indices = new int[numTris * 3];
             for (int i = 0; i < curveDataList.Count-1; i++)
             {
-                indices[i * 6 + 0] = i * 2 + 1;
-                indices[i * 6 + 1] = i * 2 + 0;
-                indices[i * 6 + 2] = i * 2 + 2;
+                indices[i * 6 + 0] = i * 4 + 0;
+                indices[i * 6 + 1] = i * 4 + 2;
+                indices[i * 6 + 2] = i * 4 + 1;
 
-                indices[i * 6 + 3] = i * 2 + 2;
-                indices[i * 6 + 4] = i * 2 + 3;
-                indices[i * 6 + 5] = i * 2 + 1;
+                indices[i * 6 + 3] = i * 4 + 1;
+                indices[i * 6 + 4] = i * 4 + 2;
+                indices[i * 6 + 5] = i * 4 + 3;
             }
             if (mesh == null)
             {
                 mesh = new Mesh();
             }
+            mesh.Clear(); // Raam Ban ilaaj :P
             mesh.vertices = verts;
             mesh.uv = uvs;
             mesh.triangles = indices;
-            mesh.SetIndices(indices, MeshTopology.Triangles, 0, true);
+            mesh.RecalculateBounds();
             meshTarget.mesh = mesh;
+
         }
 
         if (drawCurve)
